@@ -1,0 +1,31 @@
+{
+  "ingredients": [
+    { "name": "Spaghetti", "quantity": "1 pound", "unit": null },
+    { "name": "Tomato", "quantity": "2 cups", "unit": null },
+    { "name": "Garlic", "quantity": "2 cloves", "unit": null },
+    { "name": "Olive Oil", "quantity": "2 tablespoons", "unit": null },
+    { "name": "Salt", "quantity": "1/2 teaspoon", "unit": null },
+    { "name": "Pepper", "quantity": "1/4 teaspoon", "unit": null }
+  ],
+  "instructions": [
+    {
+      "step_number": 1,
+      "description": "Cook spaghetti according to package directions."
+    },
+    {
+      "step_number": 2,
+      "description": "While spaghetti is cooking, heat olive oil in a large skillet over medium heat."
+    },
+    { "step_number": 3, "description": "Add garlic and cook until fragrant." },
+    {
+      "step_number": 4,
+      "description": "Add tomatoes and simmer for 15 minutes."
+    },
+    { "step_number": 5, "description": "Season with salt and pepper." },
+    {
+      "step_number": 6,
+      "description": "Drain spaghetti and add to the sauce."
+    },
+    { "step_number": 7, "description": "Toss to combine." }
+  ]
+}
