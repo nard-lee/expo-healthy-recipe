@@ -7,6 +7,8 @@ import { useState } from "react";
 import { supabase } from "@/database/supabase";
 import { login_validator } from "@/utils/CustomValidator";
 
+
+
 export default function Login() {
   const { theme } = useTheme();
 
@@ -27,30 +29,37 @@ export default function Login() {
   };
 
   const login = async () => {
-    console.log(user)
+    setErrName({ email: "", password: "" });
     const { status, err } = login_validator(user);
-    // if (status) setErrName(err);
-    // else
-    //   try {
-    //     const { error } = await supabase.
-    //     //   email: user.email,
-    //     //   password: user.password,
-    //     // });
 
-    //     // if (error) {
-    //     //   console.log(error.details);
-    //     //   setErrName((prev) => ({
-    //     //     ...prev,
-    //     //     email: error.details,
-    //     //   }));
-    //     //   return;
-    //     // }
-    //     // console.log("success");
-    //     // setUser({ email: "", password: "" });
-    //     // setErrName({ email: "", password: "" });
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
+    if (status) setErrName(err);
+    else
+      try {
+        const { data, error } = await supabase.rpc("email_exists", {
+          email_to_check: user.email,
+        });
+        console.log(data);
+        if (data[0].email_exists == false) {
+          setErrName((prev) => ({
+            ...prev,
+            email: "email doesn't exists",
+          }));
+          return;
+        }
+
+        if (data[0].user_password !== user.password) {
+          setErrName((prev) => ({
+            ...prev,
+            password: "incorrect password",
+          }));
+          return;
+        }
+
+
+
+      } catch (error) {
+        console.log(error);
+      }
   };
 
   return (
@@ -104,7 +113,9 @@ export default function Login() {
             onChangeText={(value) => handleChange(value, "email")}
           />
         </View>
-        {errName.email !== '' && <Text style={[ styles.err_msg ]}>* { errName.email }</Text>}
+        {errName.email !== "" && (
+          <Text style={[styles.err_msg]}>* {errName.email}</Text>
+        )}
 
         <View style={styles.input_block}>
           <Entypo
@@ -127,8 +138,10 @@ export default function Login() {
             onChangeText={(value) => handleChange(value, "password")}
           />
         </View>
-        {errName.password !== '' && <Text style={[ styles.err_msg ]}>* { errName.password }</Text>}
-        <Pressable style={styles.form_btn}  onPress={() => login()}>
+        {errName.password !== "" && (
+          <Text style={[styles.err_msg]}>* {errName.password}</Text>
+        )}
+        <Pressable style={styles.form_btn} onPress={() => login()}>
           <Text style={styles.btn_text}>Login</Text>
         </Pressable>
         <View style={{ flexDirection: "row", gap: 10 }}>
@@ -191,10 +204,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   err_msg: {
-    color: 'red',
+    color: "red",
     fontSize: 10,
-    fontFamily: 'Poppins',
+    fontFamily: "Poppins",
     paddingTop: 5,
-    paddingLeft: 5
-  }
+    paddingLeft: 5,
+  },
 });

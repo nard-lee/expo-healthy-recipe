@@ -1,4 +1,11 @@
-import { StyleSheet, Text, View, Image, ActivityIndicator, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { supabase } from "@/database/supabase";
@@ -60,16 +67,18 @@ export default function Recipe() {
   }, []);
 
   return (
-    <View style={[ { height: "100%",backgroundColor: bg_primary }]}>
-      {error && <Text>error { error }</Text>}
+    <View style={[{ height: "100%", backgroundColor: bg_primary }]}>
+      {error && <Text>error {error}</Text>}
       {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
-      {recipe.length > 0 && (<Pressable
-        style={{ position: 'absolute', top: 20, left: 10, zIndex: 1 }}
-        onPress={() => router.back()}
-        android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-      >
-        <Entypo name="chevron-small-left" size={30} color={text_col} />
-      </Pressable>)}
+      {recipe.length > 0 && (
+        <Pressable
+          style={styles.back_btn}
+          onPress={() => router.back()}
+          android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+        >
+          <Entypo style={{ textAlign: 'center' }} name="chevron-small-left" size={30} color="#fff" />
+        </Pressable>
+      )}
       {recipe.length > 0 && (
         <View style={[styles.recipe_holder, { backgroundColor: bg_primary }]}>
           <Image
@@ -78,18 +87,26 @@ export default function Recipe() {
             resizeMode="cover"
           />
           <View style={styles.recipe_panel}>
-            <Text style={[styles.recipe_title, { color: text_col }]}>{recipe[0].title}</Text>
+            <Text style={[styles.recipe_title, { color: text_col }]}>
+              {recipe[0].title}
+            </Text>
             <View>
-              <Text style={[styles.recipe_desc, { color: text_col }]}>{recipe[0].description}</Text>
+              <Text style={[styles.recipe_desc, { color: text_col }]}>
+                {recipe[0].description}
+              </Text>
             </View>
             <View>
               {recipe[0].ingredient.map((item: Ingredient) => (
-                <Text key={item.name} style={{ color: text_col }}>{item.name}</Text>
+                <Text key={item.name} style={{ color: text_col }}>
+                  {item.name}
+                </Text>
               ))}
             </View>
             <View>
               {recipe[0].instruction.map((item: Instruction) => (
-                <Text key={item.step_number} style={{ color: text_col }}>{item.description}</Text>
+                <Text key={item.step_number} style={{ color: text_col }}>
+                  {item.description}
+                </Text>
               ))}
             </View>
           </View>
@@ -109,6 +126,18 @@ const styles = StyleSheet.create({
     top: 100,
     left: "45%",
   },
+  back_btn: { 
+    position: "absolute", 
+    top: 20, 
+    left: 10, 
+    zIndex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 40,
+    width: 35,
+    height: 35,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   banner: {
     width: "100%",
     height: 250,
@@ -124,5 +153,5 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 10,
     padding: 20,
-  }
+  },
 });
