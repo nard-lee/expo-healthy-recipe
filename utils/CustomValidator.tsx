@@ -14,15 +14,20 @@ const isMin = (value: string) => {
   return "";
 };
 
-interface User {
+interface SUser {
   f_name: string;
   l_name: string;
   email: string;
   password: string;
 }
 
-const validator = (user: User) => {
-  let err: User = { f_name: "", l_name: "", email: "", password: "" };
+interface LUser {
+  email: string;
+  password: string;
+}
+
+const signup_validator = (user: SUser) => {
+  let err: SUser = { f_name: "", l_name: "", email: "", password: "" };
   let status = false;
 
   if (isEmpty(user.f_name)){ 
@@ -45,4 +50,22 @@ const validator = (user: User) => {
   return {status, err};
 };
 
-export { validator };
+
+
+const login_validator = (user: LUser) => {
+  let err: LUser = { email: "", password: "" };
+  let status = false;
+
+  if (isEmail(user.email)){ 
+    err.email = isEmail(user.email);
+    status = true;
+  }
+  if (isMin(user.password)){
+    err.password = isMin(user.password);
+    status = true;
+  }
+  
+  return {status, err};
+};
+
+export { signup_validator, login_validator };

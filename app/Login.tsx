@@ -1,9 +1,11 @@
 import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";
-import Feather from "@expo/vector-icons/Feather";
 import { StatusBar } from "expo-status-bar";
 import { useTheme } from "../context/ThemeContext";
 import { router } from "expo-router";
+import { useState } from "react";
+import { supabase } from "@/database/supabase";
+import { login_validator } from "@/utils/CustomValidator";
 
 export default function Login() {
   const { theme } = useTheme();
@@ -11,6 +13,45 @@ export default function Login() {
   const bg_primary: string = theme.colors.bg_primary;
   const bg_secondary: string = theme.colors.bg_secondary;
   const text_col: string = theme.colors.txt_col;
+
+  interface User {
+    email: string;
+    password: string;
+  }
+
+  const [errName, setErrName] = useState<User>({ email: "", password: "" });
+  const [user, setUser] = useState<User>({ email: "", password: "" });
+
+  const handleChange = (value: string, key: keyof User) => {
+    setUser({ ...user, [key]: value });
+  };
+
+  const login = async () => {
+    console.log(user)
+    const { status, err } = login_validator(user);
+    // if (status) setErrName(err);
+    // else
+    //   try {
+    //     const { error } = await supabase.
+    //     //   email: user.email,
+    //     //   password: user.password,
+    //     // });
+
+    //     // if (error) {
+    //     //   console.log(error.details);
+    //     //   setErrName((prev) => ({
+    //     //     ...prev,
+    //     //     email: error.details,
+    //     //   }));
+    //     //   return;
+    //     // }
+    //     // console.log("success");
+    //     // setUser({ email: "", password: "" });
+    //     // setErrName({ email: "", password: "" });
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+  };
 
   return (
     <View
@@ -59,8 +100,12 @@ export default function Login() {
             ]}
             placeholder="Email"
             placeholderTextColor={text_col}
+            value={user.email}
+            onChangeText={(value) => handleChange(value, "email")}
           />
         </View>
+        {errName.email !== '' && <Text style={[ styles.err_msg ]}>* { errName.email }</Text>}
+
         <View style={styles.input_block}>
           <Entypo
             style={styles.input_icon}
@@ -78,9 +123,12 @@ export default function Login() {
             ]}
             placeholder="Password"
             placeholderTextColor={text_col}
+            value={user.password}
+            onChangeText={(value) => handleChange(value, "password")}
           />
         </View>
-        <Pressable style={styles.form_btn}>
+        {errName.password !== '' && <Text style={[ styles.err_msg ]}>* { errName.password }</Text>}
+        <Pressable style={styles.form_btn}  onPress={() => login()}>
           <Text style={styles.btn_text}>Login</Text>
         </Pressable>
         <View style={{ flexDirection: "row", gap: 10 }}>
@@ -142,4 +190,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 16,
   },
+  err_msg: {
+    color: 'red',
+    fontSize: 10,
+    fontFamily: 'Poppins',
+    paddingTop: 5,
+    paddingLeft: 5
+  }
 });

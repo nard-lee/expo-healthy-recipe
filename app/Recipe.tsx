@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View, Image, ActivityIndicator } from "react-native";
+import { StyleSheet, Text, View, Image, ActivityIndicator, Pressable } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { supabase } from "@/database/supabase";
 import { useTheme } from "@/context/ThemeContext";
+import { router } from "expo-router";
+import Entypo from "@expo/vector-icons/Entypo";
 
 export default function Recipe() {
   interface Ingredient {
@@ -61,6 +63,13 @@ export default function Recipe() {
     <View style={[ { height: "100%",backgroundColor: bg_primary }]}>
       {error && <Text>error { error }</Text>}
       {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
+      {recipe.length > 0 && (<Pressable
+        style={{ position: 'absolute', top: 20, left: 10, zIndex: 1 }}
+        onPress={() => router.back()}
+        android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+      >
+        <Entypo name="chevron-small-left" size={30} color={text_col} />
+      </Pressable>)}
       {recipe.length > 0 && (
         <View style={[styles.recipe_holder, { backgroundColor: bg_primary }]}>
           <Image

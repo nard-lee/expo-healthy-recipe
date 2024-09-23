@@ -62,7 +62,7 @@ export default function Home() {
         },
       ]}
     >
-      <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
+      <StatusBar style={theme.mode === "dark" ? "light" : "dark"} backgroundColor="rgba(0, 0, 0, .1)"/>
       <ScrollView>
         <View style={[styles.h_md_col]}>
           <View style={[styles.banner_holder]}>

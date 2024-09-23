@@ -6,7 +6,7 @@ import { useTheme } from "../context/ThemeContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import { supabase } from "@/database/supabase";
-import { validator } from "@/utils/CustomValidator";
+import { signup_validator } from "@/utils/CustomValidator";
 import { genID } from "@/utils/genID";
 const Signup = () => {
   const { theme } = useTheme();
@@ -30,7 +30,7 @@ const Signup = () => {
   };
 
   const register = async () => {
-    const { status, err } = validator(user);
+    const { status, err } = signup_validator(user);
     if (status) setErrName(err);
     else
     try {
@@ -41,7 +41,18 @@ const Signup = () => {
         email: user.email,
         password: user.password
       });
-      if (error) console.log(error);
+      if (error){
+        console.log(error.details)
+        setErrName(prev => ({
+          ...prev,
+          email: error.details
+        }))
+        return;
+      }
+      // console.log("success")
+      setUser({f_name: "",l_name: "",email: "",password: ""})
+      setErrName({f_name: "",l_name: "",email: "",password: ""})
+      
     } catch (error) {
       console.log(error);
     }

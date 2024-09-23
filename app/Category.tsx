@@ -14,7 +14,7 @@ import { supabase } from "@/database/supabase";
 import { useTheme } from "../context/ThemeContext";
 import { StatusBar } from "expo-status-bar";
 import Entypo from "@expo/vector-icons/Entypo";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import SearchPanel from "@/partials/SearchPanel";
 
@@ -56,6 +56,7 @@ export default function Category() {
   return (
     <View style={[styles.category, { backgroundColor: bg_primary }]}>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
+
       {error && <Text>{error}</Text>}
       {recipes && (
         <View style={styles.saved_title}>
@@ -65,14 +66,20 @@ export default function Category() {
           >
             <Entypo name="chevron-small-left" size={30} color={text_col} />
           </Pressable>
-          <MaterialCommunityIcons name="food-outline" size={30} color={text_col} />
-          <Text style={[styles.saved_text, { color: text_col }]}>{category}</Text>
+          <MaterialCommunityIcons
+            name="food-outline"
+            size={30}
+            color={text_col}
+          />
+          <Text style={[styles.saved_text, { color: text_col }]}>
+            {category}
+          </Text>
         </View>
       )}
       {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
       {recipes && (
         <ScrollView>
-          <SearchPanel/>
+          <SearchPanel />
           <View style={[styles.saved_recipe_list]}>
             {recipes.map((item) => (
               <Pressable
@@ -119,9 +126,9 @@ export default function Category() {
 
 const styles = StyleSheet.create({
   sc_load: {
-    position: 'absolute',
-    top: '45%',
-    left: '45%'
+    position: "absolute",
+    top: "45%",
+    left: "45%",
   },
   category: {
     paddingTop: "5%",
