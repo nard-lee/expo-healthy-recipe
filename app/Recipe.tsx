@@ -5,6 +5,8 @@ import {
   Image,
   ActivityIndicator,
   Pressable,
+  ScrollView,
+  ImageBackground,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
@@ -12,6 +14,14 @@ import { supabase } from "@/database/supabase";
 import { useTheme } from "@/context/ThemeContext";
 import { router } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
+import * as Speech from "expo-speech";
+import Player from "@/partials/Player";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  interpolate,
+} from "react-native-reanimated";
+import Statusbar from "@/partials/Statusbar";
 
 export default function Recipe() {
   interface Ingredient {
@@ -39,9 +49,10 @@ export default function Recipe() {
   const bg_primary: string = theme.colors.bg_primary;
   const text_col: string = theme.colors.txt_col;
 
-  const [recipe, setRecipe] = useState<Recipe[]>([]);
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const scrollY = useSharedValue(0); // Shared value for scroll position
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -49,10 +60,11 @@ export default function Recipe() {
         const { data, error } = await supabase
           .from("recipe")
           .select("title, description, ingredient, instruction")
-          .eq("recipe_id", recipe_id);
+          .eq("recipe_id", recipe_id)
+          .single(); // Fetch a single recipe
 
         if (error) {
-          setError("Error fetching dessert recipes");
+          setError(error.message || "Error fetching dessert recipes");
         } else {
           setRecipe(data);
         }
@@ -64,55 +76,126 @@ export default function Recipe() {
     };
 
     fetchRecipe();
-  }, []);
+  }, [recipe_id]);
+
+  // Animated style for the parallax effect
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(scrollY.value, [0, 100], [0, -80]);
+    return {
+      transform: [{ translateY }],
+    };
+  });
 
   return (
-    <View style={[{ height: "100%", backgroundColor: bg_primary }]}>
-      {error && <Text>error {error}</Text>}
-      {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
-      {recipe.length > 0 && (
-        <Pressable
-          style={styles.back_btn}
-          onPress={() => router.back()}
-          android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-        >
-          <Entypo style={{ textAlign: 'center' }} name="chevron-small-left" size={30} color="#fff" />
-        </Pressable>
-      )}
-      {recipe.length > 0 && (
-        <View style={[styles.recipe_holder, { backgroundColor: bg_primary }]}>
-          <Image
-            style={styles.banner}
-            source={require("../assets/images/csalad.jpg")}
-            resizeMode="cover"
-          />
-          <View style={styles.recipe_panel}>
-            <Text style={[styles.recipe_title, { color: text_col }]}>
-              {recipe[0].title}
-            </Text>
-            <View>
-              <Text style={[styles.recipe_desc, { color: text_col }]}>
-                {recipe[0].description}
-              </Text>
-            </View>
-            <View>
-              {recipe[0].ingredient.map((item: Ingredient) => (
-                <Text key={item.name} style={{ color: text_col }}>
-                  {item.name}
+    <ImageBackground
+      source={require("../assets/logo/bg.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <View style={[{ height: "100%", backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}>
+        {error && <Text style={{ color: text_col }}>Error: {error}</Text>}
+        {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
+        {recipe && (
+          <Pressable
+            style={styles.back_btn}
+            onPress={() => {
+              router.back();
+              Speech.stop();
+            }}
+            android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+          >
+            <Entypo
+              style={{ textAlign: "center" }}
+              name="chevron-small-left"
+              size={30}
+              color="#000"
+            />
+          </Pressable>
+        )}
+        {recipe && (
+          <View style={[styles.recipe_holder, { backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}>
+            <ScrollView
+              onScroll={(event) => {
+                scrollY.value = event.nativeEvent.contentOffset.y; // Update scroll position
+              }}
+              scrollEventThrottle={5}
+            >
+              <Animated.View style={[styles.banner, animatedStyle]}>
+                <Image
+                  style={styles.bannerImage}
+                  source={require("../assets/images/csalad.jpg")}
+                  resizeMode="cover"
+                />
+              </Animated.View>
+              <View style={styles.recipe_panel}>
+                <Text style={[styles.recipe_title, { color: text_col }]}>
+                  {recipe.title}
                 </Text>
-              ))}
-            </View>
-            <View>
-              {recipe[0].instruction.map((item: Instruction) => (
-                <Text key={item.step_number} style={{ color: text_col }}>
-                  {item.description}
+                <Text style={[styles.recipe_desc, { color: text_col }]}>
+                  {recipe.description}
                 </Text>
-              ))}
-            </View>
+                <Text
+                  style={[
+                    { fontFamily: "Poppins", fontSize: 20 },
+                    { color: text_col },
+                  ]}
+                >
+                  Ingredients
+                </Text>
+                <View
+                  style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}
+                >
+                  {recipe.ingredient.map((item: Ingredient) => (
+                    <Text
+                      key={item.name}
+                      style={{
+                        color: text_col,
+                        backgroundColor: "rgba(0, 0, 0, 0.1)",
+                        padding: 10,
+                        borderRadius: 8,
+                        fontFamily: "Poppins",
+                      }}
+                    >
+                      {item.quantity} {item.name}
+                    </Text>
+                  ))}
+                </View>
+                <Text
+                  style={[
+                    { fontFamily: "Poppins", fontSize: 20 },
+                    { color: text_col },
+                  ]}
+                >
+                  Instructions
+                </Text>
+                <View style={styles.step_list}>
+                  {recipe.instruction.map((item: Instruction) => (
+                    <View key={item.step_number} style={styles.step_panel}>
+                      <Text style={{ color: text_col }}>
+                        {item.step_number}.{" "}
+                      </Text>
+                      <Text
+                        style={{
+                          color: text_col,
+                          fontFamily: "Poppins",
+                          fontSize: 17,
+                        }}
+                      >
+                        {item.description}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
+            <Player
+              ingredient={recipe.ingredient}
+              instruction={recipe.instruction}
+            />
           </View>
-        </View>
-      )}
-    </View>
+        )}
+      </View>
+    </ImageBackground>
   );
 }
 
@@ -126,25 +209,33 @@ const styles = StyleSheet.create({
     top: 100,
     left: "45%",
   },
-  back_btn: { 
-    position: "absolute", 
-    top: 20, 
-    left: 10, 
+  back_btn: {
+    position: "absolute",
+    top: 30,
+    left: 10,
     zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
     borderRadius: 40,
-    width: 35,
+    width: 40,
     height: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   banner: {
     width: "100%",
     height: 250,
+    overflow: "hidden",
+  },
+  bannerImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   recipe_title: {
-    fontFamily: "Aclonica",
-    fontSize: 20,
+    fontFamily: "Poppins",
+    fontSize: 30,
   },
   recipe_desc: {
     fontFamily: "Poppins",
@@ -153,5 +244,30 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 10,
     padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    position: "relative",
+    top: -40,
+    height: "100%",
+    zIndex: 1,
+  },
+  step_list: {
+    gap: 10,
+  },
+  step_panel: {
+    flexDirection: "row",
+  },
+  audio_btn: {
+    position: "absolute",
+    top: 30,
+    right: 10,
+    zIndex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    borderRadius: 40,
+    width: 35,
+    height: 35,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

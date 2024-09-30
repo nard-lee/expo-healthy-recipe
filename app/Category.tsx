@@ -6,17 +6,17 @@ import {
   Pressable,
   Image,
   ActivityIndicator,
+  ImageBackground,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
-import Feather from "@expo/vector-icons/Feather";
 import { supabase } from "@/database/supabase";
 import { useTheme } from "../context/ThemeContext";
 import { StatusBar } from "expo-status-bar";
 import Entypo from "@expo/vector-icons/Entypo";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import SearchPanel from "@/partials/SearchPanel";
+import RecipePanel from "@/partials/RecipePanel";
+import Statusbar from "@/partials/Statusbar";
 
 export default function Category() {
   const params = useLocalSearchParams();
@@ -35,8 +35,7 @@ export default function Category() {
       try {
         const { data, error } = await supabase
           .from("recipe")
-          .select("*")
-          .eq("category", category);
+          .select("recipe_id, title, description");
 
         if (error) {
           setError("Error fetching dessert recipes");
@@ -54,73 +53,38 @@ export default function Category() {
   }, []);
 
   return (
-    <View style={[styles.category, { backgroundColor: bg_primary }]}>
-      <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
+    <ImageBackground source={require("../assets/logo/bg.jpg")} style={{ flex: 1}} resizeMode="cover">
+      <View style={[styles.category, { }]}>
+        <Statusbar/>
+        {error && <Text>{error}</Text>}
+        {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
+        {recipes && (
+          <View style={styles.saved_title}>
+            <Pressable
+              style={styles.back_btn}
+              onPress={() => router.back()}
+              android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+            >
+              <Entypo name="chevron-small-left" size={30} color={text_col} />
+            </Pressable>
 
-      {error && <Text>{error}</Text>}
-      {recipes && (
-        <View style={styles.saved_title}>
-          <Pressable
-            onPress={() => router.back()}
-            android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-          >
-            <Entypo name="chevron-small-left" size={30} color={text_col} />
-          </Pressable>
-          <MaterialCommunityIcons
-            name="food-outline"
-            size={30}
-            color={text_col}
-          />
-          <Text style={[styles.saved_text, { color: text_col }]}>
-            {category}
-          </Text>
-        </View>
-      )}
-      {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
-      {recipes && (
-        <ScrollView>
-          <SearchPanel />
-          <View style={[styles.saved_recipe_list]}>
-            {recipes.map((item) => (
-              <Pressable
-                key={item.recipe_id}
-                android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-                style={styles.top_recipe_panel}
-                onPress={() =>
-                  router.navigate({
-                    pathname: "/Recipe",
-                    params: { recipe_id: item.recipe_id },
-                  })
-                }
-              >
-                <View style={styles.top_recipe_icon}>
-                  <Image
-                    style={styles.top_recipe_img}
-                    source={require("../assets/images/lg-vegie.jpg")}
-                    resizeMode="cover"
-                  />
-                </View>
-                <View style={styles.top_recipe_desc}>
-                  <Text style={[styles.title_text, { color: text_col }]}>
-                    {item.title}
-                  </Text>
-                  <Text
-                    ellipsizeMode="tail"
-                    numberOfLines={1}
-                    style={[styles.desc_text, { width: 250, color: text_col }]}
-                  >
-                    {item.description}
-                  </Text>
-                </View>
-                <Pressable>
-                  <Feather name="heart" size={15} color={text_col} />
-                </Pressable>
-              </Pressable>
-            ))}
+            <Text style={[styles.saved_text, { color: text_col }]}>
+              {category} recipes
+            </Text>
           </View>
-        </ScrollView>
-      )}
-    </View>
+        )}
+
+        {recipes && (
+          <ScrollView>
+            <View style={[styles.saved_recipe_list]}>
+              {recipes.map((item) => (
+                <RecipePanel {...item} key={item.recipe_id} />
+              ))}
+            </View>
+          </ScrollView>
+        )}
+      </View>
+    </ImageBackground>
   );
 }
 
@@ -130,23 +94,34 @@ const styles = StyleSheet.create({
     top: "45%",
     left: "45%",
   },
+  back_btn: {
+    width: 40,
+    height: 35,
+    // backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   category: {
     paddingTop: "5%",
     height: "100%",
   },
   saved_title: {
-    paddingTop: 20,
     padding: 10,
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    // backgroundColor: 'red'
   },
   saved_text: {
-    fontFamily: "Aclonica",
-    fontSize: 17,
+    fontFamily: "Poppins",
+    fontSize: 20,
   },
-  saved_recipe_list: {},
+  saved_recipe_list: {
+    flexDirection: "column",
+    gap: 8,
+    padding: 15,
+    width: "100%",
+  },
   top_recipe_panel: {
     flexDirection: "row",
     alignItems: "center",

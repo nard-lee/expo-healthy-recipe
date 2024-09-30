@@ -1,4 +1,4 @@
-import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
+import { View, Text, TextInput, StyleSheet, Pressable, ImageBackground } from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";
 import { StatusBar } from "expo-status-bar";
 import { useTheme } from "../context/ThemeContext";
@@ -6,7 +6,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { supabase } from "@/database/supabase";
 import { login_validator } from "@/utils/CustomValidator";
-
+import * as SecureStore from 'expo-secure-store';
 
 
 export default function Login() {
@@ -35,10 +35,10 @@ export default function Login() {
     if (status) setErrName(err);
     else
       try {
-        const { data, error } = await supabase.rpc("email_exists", {
+        const { data } = await supabase.rpc("email_exists", {
           email_to_check: user.email,
         });
-        console.log(data);
+        // console.log(data);
         if (data[0].email_exists == false) {
           setErrName((prev) => ({
             ...prev,
@@ -55,7 +55,9 @@ export default function Login() {
           return;
         }
 
-
+        await SecureStore.setItemAsync('user_id', data[0].user_id);
+        setUser({email: '', password: ''});
+        router.navigate('/(tabs)')
 
       } catch (error) {
         console.log(error);
@@ -63,6 +65,11 @@ export default function Login() {
   };
 
   return (
+    <ImageBackground
+    source={require("../assets/logo/bg.jpg")}
+    style={{ flex: 1 }}
+    resizeMode="cover"
+  >
     <View
       style={[
         styles.form_container,
@@ -157,6 +164,7 @@ export default function Login() {
         </View>
       </View>
     </View>
+    </ImageBackground>
   );
 }
 

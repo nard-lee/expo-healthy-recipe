@@ -3,7 +3,8 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { ThemeProvider } from "../context/ThemeContext";
-
+import { UserProvider } from "@/context/UserContext";
+import { TabProvider } from "@/context/TabContext";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -28,17 +29,21 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="Login" />
-        <Stack.Screen name="Signup"/>
-        <Stack.Screen name="Category"/>
-        <Stack.Screen name="Recipe"/>
-      </Stack>
+      <UserProvider>
+        <TabProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="Login" />
+            <Stack.Screen name="Signup" />
+            <Stack.Screen name="Category" />
+            <Stack.Screen name="Recipe" />
+          </Stack>
+        </TabProvider>
+      </UserProvider>
     </ThemeProvider>
   );
 }

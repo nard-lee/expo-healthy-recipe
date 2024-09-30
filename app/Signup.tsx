@@ -34,7 +34,9 @@ const Signup = () => {
     if (status) setErrName(err);
     else
     try {
-      const { error } = await supabase.from("user").insert({
+      const { error } = await supabase
+      .from("user")
+      .insert({
         user_id: genID('user'),
         f_name: user.f_name,
         l_name: user.l_name,
@@ -49,9 +51,11 @@ const Signup = () => {
         }))
         return;
       }
-      // console.log("success")
+
       setUser({f_name: "",l_name: "",email: "",password: ""})
       setErrName({f_name: "",l_name: "",email: "",password: ""})
+
+      router.navigate('/Login');
       
     } catch (error) {
       console.log(error);

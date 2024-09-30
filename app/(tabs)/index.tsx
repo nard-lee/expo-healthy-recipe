@@ -4,136 +4,69 @@ import {
   Text,
   View,
   ScrollView,
-  Pressable,
+  ImageBackground,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
+import React from "react";
 import Feather from "@expo/vector-icons/Feather";
 import { useTheme } from "../../context/ThemeContext";
-import dishesData from "../../utils/topTen";
-import { supabase } from "@/database/supabase";
-import { useRouter } from "expo-router";
-// import { genID } from '@/utils/genID';
-// import { recipes } from "@/utils/recipe";
 import HomeCategory from "@/partials/HomeCategory";
 import SearchPanel from "@/partials/SearchPanel";
+import Statusbar from "@/partials/Statusbar";
+import { useConnection } from "@/hooks/useConnection";
+import ConnectPanel from "@/partials/ConnectPanel";
 
 export default function Home() {
-  interface Recipe {
-    recipe_id: string;
-    title: string;
-    description: string;
-    category: string;
-    created_at: Date;
-    img_url: string;
-    ingredient: any;
-    instruction: any;
-  }
-
-  const [recipe, setRecipe] = useState<Recipe[]>([]);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      const { data, error } = await supabase.from("recipe").select("*");
-      if (error) {
-        console.error(error);
-      } else {
-        setRecipe(data || []);
-      }
-    };
-
-    fetchRecipe();
-  }, []);
-
-  // {recipe && console.log(recipe)}
-
   const { theme } = useTheme();
+  const isOnline = useConnection();
 
   const bg_primary: string = theme.colors.bg_primary;
   const text_col: string = theme.colors.txt_col;
 
   return (
-    <View
-      style={[
-        styles.home,
-        {
-          backgroundColor: bg_primary,
-        },
-      ]}
+    <ImageBackground
+      source={require("../../assets/logo/bg.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
     >
-      <StatusBar style={theme.mode === "dark" ? "light" : "dark"} backgroundColor="rgba(0, 0, 0, .1)"/>
-      <ScrollView>
-        <View style={[styles.h_md_col]}>
-          <View style={[styles.banner_holder]}>
-            <Image
-              style={styles.banner}
-              source={require("../../assets/images/banner1.jpg")}
-              resizeMode="cover"
-            />
-          </View>
-          <View style={styles.category_header}>
-            <Feather name="grid" size={24} color={text_col} />
-            <Text style={[styles.category_text, { color: text_col }]}>
-              CATEGORIES
-            </Text>
-          </View>
-          {/* category */}
-          <HomeCategory/>
-          {/* category */}
-          <View>
-            {/* search */}
-            <SearchPanel/>
-            {/* search */}
-            <View style={[styles.top_recipe_header]}>
-              {/* <AntDesign name="staro" size={24} color={text_col} /> */}
-              <Text style={[styles.top_recipe_text, { color: text_col }]}>
-                TOP 10 RECIPE OF THE DAY
+      <View
+        style={[styles.home, { backgroundColor: "rgba(255, 255, 255, 0.7)" }]}
+      >
+        <Statusbar />
+        <ScrollView>
+          <View style={[styles.h_md_col]}>
+            <View style={[styles.banner_holder]}>
+              <Image
+                style={styles.banner}
+                source={require("../../assets/images/banner1.jpg")}
+                resizeMode="cover"
+              />
+            </View>
+            <View style={styles.category_header}>
+              <Feather name="grid" size={24} color={text_col} />
+              <Text style={[styles.category_text, { color: text_col }]}>
+                CATEGORIES
               </Text>
             </View>
+            <HomeCategory />
+            <View>
+              <SearchPanel />
+              <View style={[styles.top_recipe_header]}>
+                <Text style={[styles.top_recipe_text, { color: text_col }]}>
+                  TOP 10 RECIPE OF THE DAY
+                </Text>
+              </View>
 
-            <View style={styles.top_recipe_list}>
-              {dishesData.map((item) => (
-                <Pressable
-                  key={item.id}
-                  android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-                  style={styles.top_recipe_panel}
-                >
-                  <View style={styles.top_recipe_icon}>
-                    <Image
-                      style={styles.top_recipe_img}
-                      source={item.src}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <View style={styles.top_recipe_desc}>
-                    <Text style={[styles.title_text, { color: text_col }]}>
-                      {item.name}
-                    </Text>
-                    <Text
-                      ellipsizeMode="tail"
-                      numberOfLines={1}
-                      style={[
-                        styles.desc_text,
-                        { width: "95%", color: text_col },
-                      ]}
-                    >
-                      {item.shortDescription}
-                    </Text>
-                  </View>
-                  <Pressable
-                    android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-                    style={[styles.heart_btn]}
-                  >
-                    <Feather name="heart" size={15} color={text_col} />
-                  </Pressable>
-                </Pressable>
-              ))}
+              <View style={styles.top_recipe_list}>
+                {/* {dishesData.map((item) => (
+                <RecipePanel {...item}/>
+              ))} */}
+              </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+        {!isOnline && <ConnectPanel />}
+      </View>
+    </ImageBackground>
   );
 }
 
@@ -170,7 +103,7 @@ const styles = StyleSheet.create({
     fontSize: 23,
     color: "#1a1a1a",
   },
-  
+
   top_recipe_header: {
     flexDirection: "row",
     alignItems: "center",
@@ -183,6 +116,7 @@ const styles = StyleSheet.create({
   },
   top_recipe_list: {
     flexDirection: "column",
+    padding: 10,
   },
   top_recipe_panel: {
     flexDirection: "row",
@@ -216,5 +150,11 @@ const styles = StyleSheet.create({
     top: 20,
     padding: 5,
     borderRadius: 10,
+  },
+  active_panel: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 4,
   },
 });

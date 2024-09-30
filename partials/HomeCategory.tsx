@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingLeft: 10,
     paddingRight: 10,
-    // backgroundColor: 'red'
   },
   c_row: {
     flexDirection: "row",

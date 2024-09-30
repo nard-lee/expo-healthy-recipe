@@ -4,6 +4,7 @@ import { lightTheme, darkTheme } from "@/utils/theme";
 interface Theme {
   mode: string;
   colors: {
+    bg_bar: string;
     bg_primary: string;
     bg_secondary: string;
     txt_col: string;
