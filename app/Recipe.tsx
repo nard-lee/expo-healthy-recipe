@@ -50,6 +50,10 @@ export default function Recipe() {
   const text_col: string = theme.colors.txt_col;
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [ingredient, setIngredient] = useState<Ingredient[] | undefined>(undefined)
+  const [instruction, setInstruction] = useState<Instruction[] | undefined>(undefined);
+
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const scrollY = useSharedValue(0); // Shared value for scroll position
@@ -67,6 +71,8 @@ export default function Recipe() {
           setError(error.message || "Error fetching dessert recipes");
         } else {
           setRecipe(data);
+          setIngredient(JSON.parse(data.ingredient).ing)
+          setInstruction(JSON.parse(data.instruction).steps);
         }
       } catch (error) {
         setError("Error during query");
@@ -78,6 +84,8 @@ export default function Recipe() {
     fetchRecipe();
   }, [recipe_id]);
 
+
+  console.log("data:",instruction)
   // Animated style for the parallax effect
   const animatedStyle = useAnimatedStyle(() => {
     const translateY = interpolate(scrollY.value, [0, 100], [0, -80]);
@@ -145,7 +153,7 @@ export default function Recipe() {
                 <View
                   style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}
                 >
-                  {recipe.ingredient.map((item: Ingredient) => (
+                  { ingredient && ingredient.map((item: Ingredient) => (
                     <Text
                       key={item.name}
                       style={{
@@ -169,7 +177,7 @@ export default function Recipe() {
                   Instructions
                 </Text>
                 <View style={styles.step_list}>
-                  {recipe.instruction.map((item: Instruction) => (
+                  {instruction && instruction.map((item: Instruction) => (
                     <View key={item.step_number} style={styles.step_panel}>
                       <Text style={{ color: text_col }}>
                         {item.step_number}.{" "}

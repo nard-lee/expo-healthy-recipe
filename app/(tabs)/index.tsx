@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <ImageBackground
-      source={require("../../assets/logo/bg.jpg")}
+      source={require("../../assets/logo/bg3.jpg")}
       style={{ flex: 1 }}
       resizeMode="cover"
     >
