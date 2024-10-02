@@ -38,6 +38,7 @@ export default function Recipe() {
     title: string;
     description: string;
     category: string;
+    img_url: string;
     ingredient: Ingredient[];
     instruction: Instruction[];
   }
@@ -46,32 +47,35 @@ export default function Recipe() {
   const { recipe_id } = params;
   const { theme } = useTheme();
 
-  const bg_primary: string = theme.colors.bg_primary;
   const text_col: string = theme.colors.txt_col;
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [ingredient, setIngredient] = useState<Ingredient[] | undefined>(undefined)
-  const [instruction, setInstruction] = useState<Instruction[] | undefined>(undefined);
-
+  const [ingredient, setIngredient] = useState<Ingredient[] | undefined>(
+    undefined
+  );
+  const [instruction, setInstruction] = useState<Instruction[] | undefined>(
+    undefined
+  );
+  const [recipeImg, setRecipeImg] = useState<string>();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const scrollY = useSharedValue(0); // Shared value for scroll position
+  const scrollY = useSharedValue(0);
 
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
         const { data, error } = await supabase
           .from("recipe")
-          .select("title, description, ingredient, instruction")
+          .select("title, description, ingredient, instruction, img_url")
           .eq("recipe_id", recipe_id)
-          .single(); // Fetch a single recipe
+          .single();
 
         if (error) {
           setError(error.message || "Error fetching dessert recipes");
         } else {
           setRecipe(data);
-          setIngredient(JSON.parse(data.ingredient).ing)
+          setIngredient(JSON.parse(data.ingredient).ing);
           setInstruction(JSON.parse(data.instruction).steps);
         }
       } catch (error) {
@@ -84,15 +88,35 @@ export default function Recipe() {
     fetchRecipe();
   }, [recipe_id]);
 
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const { data, error } = await supabase.storage
+          .from("hr_bucket")
+          .getPublicUrl(recipe?.img_url);
 
-  console.log("data:",instruction)
-  // Animated style for the parallax effect
+        setRecipeImg(data["publicUrl"]);
+
+        if (error) {
+          console.error("Error fetching image:", error);
+          return;
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchImage();
+  }, [recipe]);
+
   const animatedStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(scrollY.value, [0, 100], [0, -80]);
+    const translateY = interpolate(scrollY.value, [0, 100], [0, -30]);
     return {
       transform: [{ translateY }],
     };
   });
+
+  console.log(recipeImg)
 
   return (
     <ImageBackground
@@ -100,7 +124,12 @@ export default function Recipe() {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <View style={[{ height: "100%", backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}>
+      <Statusbar />
+      <View
+        style={[
+          { height: "100%", backgroundColor: "rgba(255, 255, 255, 0.5)" },
+        ]}
+      >
         {error && <Text style={{ color: text_col }}>Error: {error}</Text>}
         {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
         {recipe && (
@@ -121,7 +150,12 @@ export default function Recipe() {
           </Pressable>
         )}
         {recipe && (
-          <View style={[styles.recipe_holder, { backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}>
+          <View
+            style={[
+              styles.recipe_holder,
+              { backgroundColor: "rgba(255, 255, 255, 0.5)" },
+            ]}
+          >
             <ScrollView
               onScroll={(event) => {
                 scrollY.value = event.nativeEvent.contentOffset.y; // Update scroll position
@@ -129,11 +163,13 @@ export default function Recipe() {
               scrollEventThrottle={5}
             >
               <Animated.View style={[styles.banner, animatedStyle]}>
-                <Image
-                  style={styles.bannerImage}
-                  source={require("../assets/images/csalad.jpg")}
-                  resizeMode="cover"
-                />
+                {recipe && recipeImg && (
+                  <Image
+                    style={styles.bannerImage}
+                    source={{uri: recipeImg}}
+                    resizeMode="cover"
+                  />
+                )}
               </Animated.View>
               <View style={styles.recipe_panel}>
                 <Text style={[styles.recipe_title, { color: text_col }]}>
@@ -151,22 +187,24 @@ export default function Recipe() {
                   Ingredients
                 </Text>
                 <View
-                  style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}
+                  style={{ flexDirection: "column", gap: 4, flexWrap: "wrap" }}
                 >
-                  { ingredient && ingredient.map((item: Ingredient) => (
-                    <Text
-                      key={item.name}
-                      style={{
-                        color: text_col,
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        padding: 10,
-                        borderRadius: 8,
-                        fontFamily: "Poppins",
-                      }}
-                    >
-                      {item.quantity} {item.name}
-                    </Text>
-                  ))}
+                  {ingredient &&
+                    ingredient.map((item: Ingredient) => (
+                      <Text
+                        key={item.name}
+                        style={{
+                          color: text_col,
+                          backgroundColor: "rgba(0, 0, 0, 0.1)",
+                          padding: 10,
+                          borderRadius: 8,
+                          fontFamily: "Poppins",
+                          width: "100%",
+                        }}
+                      >
+                        {item.quantity} {item.name}
+                      </Text>
+                    ))}
                 </View>
                 <Text
                   style={[
@@ -177,28 +215,29 @@ export default function Recipe() {
                   Instructions
                 </Text>
                 <View style={styles.step_list}>
-                  {instruction && instruction.map((item: Instruction) => (
-                    <View key={item.step_number} style={styles.step_panel}>
-                      <Text style={{ color: text_col }}>
-                        {item.step_number}.{" "}
-                      </Text>
-                      <Text
-                        style={{
-                          color: text_col,
-                          fontFamily: "Poppins",
-                          fontSize: 17,
-                        }}
-                      >
-                        {item.description}
-                      </Text>
-                    </View>
-                  ))}
+                  {instruction &&
+                    instruction.map((item: Instruction) => (
+                      <View key={item.step_number} style={styles.step_panel}>
+                        <Text style={{ color: text_col }}>
+                          {item.step_number}.{" "}
+                        </Text>
+                        <Text
+                          style={{
+                            color: text_col,
+                            fontFamily: "Poppins",
+                            fontSize: 17,
+                          }}
+                        >
+                          {item.description}
+                        </Text>
+                      </View>
+                    ))}
                 </View>
               </View>
             </ScrollView>
             <Player
-              ingredient={recipe.ingredient}
-              instruction={recipe.instruction}
+              ingredient={ingredient}
+              instruction={instruction}
             />
           </View>
         )}
@@ -222,12 +261,13 @@ const styles = StyleSheet.create({
     top: 30,
     left: 10,
     zIndex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
     borderRadius: 40,
     width: 40,
     height: 35,
     alignItems: "center",
     justifyContent: "center",
+    elevation: 3,
   },
   banner: {
     width: "100%",
@@ -247,6 +287,9 @@ const styles = StyleSheet.create({
   },
   recipe_desc: {
     fontFamily: "Poppins",
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5,
   },
   recipe_panel: {
     flexDirection: "column",
@@ -254,24 +297,28 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
     position: "relative",
-    top: -40,
+    top: 0,
     height: "100%",
     zIndex: 1,
+    borderWidth: 1,
   },
   step_list: {
     gap: 10,
   },
   step_panel: {
     flexDirection: "row",
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5,
   },
   audio_btn: {
     position: "absolute",
     top: 30,
     right: 10,
     zIndex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 40,
     width: 35,
     height: 35,

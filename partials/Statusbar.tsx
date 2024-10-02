@@ -10,7 +10,7 @@ export default function Statusbar() {
         colors={["rgba(0,0,0,0.9)", "transparent"]}
         style={{
           position: "absolute",
-          top: -20,
+          top: 0,
           width: "100%",
           height: 20,
           zIndex: 2,

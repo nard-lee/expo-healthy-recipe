@@ -121,7 +121,6 @@ const styles = StyleSheet.create({
     width: "100%",
     fontFamily: "OpenSans",
     position: "absolute",
-    backgroundColor: "rgba(0, 0, 0, 0.0)",
     height: "100%",
   },
   ct_text: {

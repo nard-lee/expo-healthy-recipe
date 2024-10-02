@@ -22,11 +22,12 @@ interface Instruction {
 }
 
 interface RecipeProps {
-  ingredient: Ingredient[];
-  instruction: Instruction[];
+  ingredient: Ingredient[] | undefined;
+  instruction: Instruction[] | undefined;
 }
 
-const Player: React.FC<RecipeProps> = ({ ingredient, instruction }) => {
+const Player: React.FC<RecipeProps | undefined> = ({ ingredient, instruction }) => {
+  
   const [isOut, setIsOut] = useState<boolean>(false);
   const [isPlayed, setIsPlayed] = useState<boolean>(false);
   const [currStep, setCurrStep] = useState<number>(0);

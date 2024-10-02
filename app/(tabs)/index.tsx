@@ -29,7 +29,7 @@ export default function Home() {
       resizeMode="cover"
     >
       <View
-        style={[styles.home, { backgroundColor: "rgba(255, 255, 255, 0.7)" }]}
+        style={[styles.home, { backgroundColor: "rgba(255, 255, 255, 0.9)" }]}
       >
         <Statusbar />
         <ScrollView>

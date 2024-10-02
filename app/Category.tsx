@@ -12,7 +12,6 @@ import React, { useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { supabase } from "@/database/supabase";
 import { useTheme } from "../context/ThemeContext";
-import { StatusBar } from "expo-status-bar";
 import Entypo from "@expo/vector-icons/Entypo";
 import { router } from "expo-router";
 import RecipePanel from "@/partials/RecipePanel";
@@ -53,9 +52,13 @@ export default function Category() {
   }, []);
 
   return (
-    <ImageBackground source={require("../assets/logo/bg.jpg")} style={{ flex: 1}} resizeMode="cover">
-      <View style={[styles.category, { }]}>
-        <Statusbar/>
+    <ImageBackground
+      source={require("../assets/logo/bg.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <Statusbar />
+      <View style={[styles.category, {}]}>
         {error && <Text>{error}</Text>}
         {loading && <ActivityIndicator style={styles.sc_load} size="large" />}
         {recipes && (
